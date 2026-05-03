@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: video-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+        - name: worker
+          image: worker:local
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: REDIS_HOST
+              value: redis
+          volumeMounts:
+            - name: raw-video-storage
+              mountPath: /videos/raw
+            - name: processed-video-storage
+              mountPath: /videos/processed
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+            limits:
+              cpu: "2"
+              memory: "2Gi"
+      volumes:
+        - name: raw-video-storage
+          persistentVolumeClaim:
+            claimName: raw-video-pvc
+        - name: processed-video-storage
+          persistentVolumeClaim:
+            claimName: processed-video-pvc
