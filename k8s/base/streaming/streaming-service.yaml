@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: streaming-nginx
+  namespace: video-platform
+spec:
+  selector:
+    app: streaming-nginx
+  ports:
+    - port: 80
+      targetPort: 80

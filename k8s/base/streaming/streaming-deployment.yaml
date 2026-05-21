@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: streaming-nginx
+  namespace: video-platform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: streaming-nginx
+  template:
+    metadata:
+      labels:
+        app: streaming-nginx
+    spec:
+      containers:
+        - name: streaming-nginx
+          image: streaming-nginx:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: processed-video-storage
+              mountPath: /usr/share/nginx/html
+      volumes:
+        - name: processed-video-storage
+          persistentVolumeClaim:
+            claimName: processed-video-pvc
