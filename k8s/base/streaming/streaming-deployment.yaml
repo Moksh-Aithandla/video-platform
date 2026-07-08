@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: streaming-nginx
-          image: streaming-nginx:local
+          image: mokshaithandla/streaming-nginx:v1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
