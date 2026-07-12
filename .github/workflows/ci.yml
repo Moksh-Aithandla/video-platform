@@ -21,7 +21,7 @@ jobs:
 
       - name: Set short Commit sha
         run: |
-        echo "Short_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV 
+          echo "Short_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV 
 
       - name: Build Upload API Image
         run: |
