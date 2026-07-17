@@ -23,17 +23,14 @@ jobs:
         run: |
           echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
 
-      - name: Build Upload API Image
-        run: |
-          docker build \
-            -t mokshaithandla/upload-api:latest \
-            -t mokshaithandla/upload-api:$SHORT_SHA \
-            ./services/upload-api
-
-      - name: Push Upload API Image
-        run: |
-          docker push mokshaithandla/upload-api:latest
-          docker push mokshaithandla/upload-api:$SHORT_SHA
+      - name: Build and Push Upload API Image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./services/upload-api
+          push: true
+          tags: |
+            mokshaithandla/upload-api:latest
+            mokshaithandla/upload-api:${{ env.SHORT_SHA }}
 
       - name: Build Worker Image
         run: |
