@@ -32,14 +32,11 @@ jobs:
             mokshaithandla/upload-api:latest
             mokshaithandla/upload-api:${{ env.SHORT_SHA }}
 
-      - name: Build Worker Image
-        run: |
-          docker build \
-            -t mokshaithandla/worker:latest \
-            -t mokshaithandla/worker:$SHORT_SHA \
-            ./services/worker
-
-      - name: Push Worker Image
-        run: |
-          docker push mokshaithandla/worker:latest
-          docker push mokshaithandla/worker:$SHORT_SHA
+      - name: Build and Push Worker Image
+        uses: docker/buiild-push-action@v6
+        with:
+          context: ./services/worker
+          push: true
+          tags: |
+            mokshaithandla/worker:latest
+            mokshaithandla/worker:${{ env/SHORT_SHA}}
