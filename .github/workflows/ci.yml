@@ -30,20 +30,38 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./services/upload-api
-          load: true
+          push: true
           tags: |
             mokshaithandla/upload-api:latest
             mokshaithandla/upload-api:${{ env.SHORT_SHA }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Scan Upload API Image
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: mokshaithandla/upload-api:${{ env.SHORT_SHA }}
+          format: table
+          exit-code: 1
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL
+
       - name: Build and Push Worker Image
         uses: docker/build-push-action@v6
         with:
           context: ./services/worker
-          load: true
+          push: true
           tags: |
             mokshaithandla/worker:latest
             mokshaithandla/worker:${{ env.SHORT_SHA }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Scan Worker Image
+        uses: aquasecurity/trivy-action@0.33.1
+        with:
+          image-ref: mokshaithandla/worker:${{ env.SHORT_SHA }}
+          format: table
+          exit-code: 1
+          ignore-unfixed: true
+          severity: HIGH,CRITICAL 
