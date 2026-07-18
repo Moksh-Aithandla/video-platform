@@ -30,7 +30,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./services/upload-api
-          push: true
+          load: true
           tags: |
             mokshaithandla/upload-api:latest
             mokshaithandla/upload-api:${{ env.SHORT_SHA }}
@@ -41,7 +41,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./services/worker
-          push: true
+          load: true
           tags: |
             mokshaithandla/worker:latest
             mokshaithandla/worker:${{ env.SHORT_SHA }}
