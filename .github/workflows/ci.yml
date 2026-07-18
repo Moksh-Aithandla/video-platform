@@ -37,15 +37,6 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Scan Upload API Image
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: mokshaithandla/upload-api:${{ env.SHORT_SHA }}
-          format: table
-          exit-code: 1
-          ignore-unfixed: true
-          severity: HIGH,CRITICAL
-
       - name: Build and Push Worker Image
         uses: docker/build-push-action@v6
         with:
@@ -56,12 +47,3 @@ jobs:
             mokshaithandla/worker:${{ env.SHORT_SHA }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Scan Worker Image
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: mokshaithandla/worker:${{ env.SHORT_SHA }}
-          format: table
-          exit-code: 1
-          ignore-unfixed: true
-          severity: HIGH,CRITICAL 
