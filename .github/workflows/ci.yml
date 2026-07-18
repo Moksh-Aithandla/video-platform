@@ -35,7 +35,7 @@ jobs:
           cache-to: type:gha,mode=max
 
       - name: Build and Push Worker Image
-        uses: docker/buiild-push-action@v6
+        uses: docker/build-push-action@v6
         with:
           context: ./services/worker
           push: true
