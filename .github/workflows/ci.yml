@@ -38,7 +38,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Scan Upload API Image
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: mokshaithandla/upload-api:${{ env.SHORT_SHA }}
           format: table
@@ -58,7 +58,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Scan Worker Image
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: mokshaithandla/worker:${{ env.SHORT_SHA }}
           format: table
