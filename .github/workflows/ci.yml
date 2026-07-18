@@ -31,8 +31,8 @@ jobs:
           tags: |
             mokshaithandla/upload-api:latest
             mokshaithandla/upload-api:${{ env.SHORT_SHA }}
-          cache-from: type:gha
-          cache-to: type:gha,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Build and Push Worker Image
         uses: docker/build-push-action@v6
