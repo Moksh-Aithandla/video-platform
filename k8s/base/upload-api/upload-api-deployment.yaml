@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: upload-api
-          image: upload-api:local
+          image: mokshaithandla/upload-api:v1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3000
@@ -32,6 +32,7 @@ spec:
             limits:
               cpu: "500m"
               memory: "512Mi"
+
       volumes:
         - name: raw-video-storage
           persistentVolumeClaim:

@@ -1,8 +1,17 @@
+const http = require("http");
 const Redis = require("ioredis");
 const { exec } = require("child_process");
 const util = require("util");
 const fs = require("fs");
 const path = require("path");
+
+const {
+  register,
+  videosProcessed,
+  processingFailures,
+  processingDuration,
+  activeJobs,
+} = require("./metrics");
 
 const execPromise = util.promisify(exec);
 
@@ -35,6 +44,10 @@ ffmpeg -y -i "${inputPath}" \
   try {
     const { stdout, stderr } = await execPromise(command);
 
+    if (stdout) {
+      console.log(stdout);
+    }
+
     if (stderr) {
       console.log(stderr);
     }
@@ -51,26 +64,36 @@ async function processJobs() {
 
   while (true) {
     try {
+      // Wait for a job from Redis
       const result = await redis.brpop("video-jobs", 0);
       const job = JSON.parse(result[1]);
 
       console.log("Processing:", job.filename);
 
-      const inputPath = path.join(RAW_DIR, job.filename);
-      const outputDir = path.join(PROCESSED_DIR, job.filename);
+      // Metrics
+      activeJobs.inc();
+      const endTimer = processingDuration.startTimer();
 
-      fs.mkdirSync(outputDir, { recursive: true });
+      try {
+        const inputPath = path.join(RAW_DIR, job.filename);
+        const outputDir = path.join(PROCESSED_DIR, job.filename);
 
-      const output480 = path.join(outputDir, "480p");
-      const output720 = path.join(outputDir, "720p");
+        fs.mkdirSync(outputDir, { recursive: true });
 
-      fs.mkdirSync(output480, { recursive: true });
-      fs.mkdirSync(output720, { recursive: true });
+        const output480 = path.join(outputDir, "480p");
+        const output720 = path.join(outputDir, "720p");
 
-      await processVideo(inputPath, output480, 480);
-      await processVideo(inputPath, output720, 720);
+        fs.mkdirSync(output480, { recursive: true });
+        fs.mkdirSync(output720, { recursive: true });
 
-      const masterPlaylist = `#EXTM3U
+        // Generate 480p
+        await processVideo(inputPath, output480, 480);
+
+        // Generate 720p
+        await processVideo(inputPath, output720, 720);
+
+        // Create Master Playlist
+        const masterPlaylist = `#EXTM3U
 #EXT-X-STREAM-INF:BANDWIDTH=1400000,RESOLUTION=854x480
 480p/index.m3u8
 
@@ -78,18 +101,54 @@ async function processJobs() {
 720p/index.m3u8
 `;
 
-      fs.writeFileSync(
-        path.join(outputDir, "master.m3u8"),
-        masterPlaylist
-      );
+        fs.writeFileSync(
+          path.join(outputDir, "master.m3u8"),
+          masterPlaylist
+        );
 
-      console.log("Master playlist created");
-      console.log("Processing complete:", job.filename);
+        console.log("Master playlist created");
+
+        // Success Metrics
+        videosProcessed.inc();
+
+        console.log("Processing complete:", job.filename);
+
+      } catch (err) {
+        // Failure Metrics
+        processingFailures.inc();
+
+        console.error("Worker Processing Error:", err);
+
+      } finally {
+        // Always execute
+        activeJobs.dec();
+        endTimer();
+      }
 
     } catch (err) {
-      console.error("Worker Processing Error:", err);
+      console.error("Redis Error:", err);
     }
   }
 }
 
+// Metrics HTTP Server
+http
+  .createServer(async (req, res) => {
+    if (req.url === "/metrics") {
+      res.writeHead(200, {
+        "Content-Type": register.contentType,
+      });
+
+      res.end(await register.metrics());
+      return;
+    }
+
+    res.writeHead(404);
+    res.end();
+  })
+  .listen(3001, () => {
+    console.log("Metrics server listening on port 3001");
+  });
+
+// Start Worker
 processJobs();
